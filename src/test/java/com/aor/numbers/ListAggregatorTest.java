@@ -7,14 +7,11 @@ import org.junit.jupiter.api.Test;
 import java.util.Arrays;
 import java.util.List;
 
+import org.mockito.Mockito;
+
 public class ListAggregatorTest {
     private List<Integer> list;
-    static private ListAggregator aggregator;
-
-    @BeforeAll
-    public static void setup() {
-        aggregator = new ListAggregator();
-    }
+    private static ListAggregator aggregator;
 
     private List<Integer> createListPositive() {
         return Arrays.asList(1,2,4,2,5);
@@ -27,6 +24,11 @@ public class ListAggregatorTest {
     private List<Integer> createListRepeated() {
         return Arrays.asList(1,2,4,2);
     }
+    @BeforeAll
+    public static void setup() {
+        aggregator = new ListAggregator();
+    }
+
 
     @Test
     public void sum() {
@@ -70,14 +72,20 @@ public class ListAggregatorTest {
 
     @Test
     public void distinctBug8726() {
+        list = createListRepeated();
+
+        /*
         class Stub extends ListDeduplicator {
             @Override
             public List<Integer> deduplicate(List<Integer> list) {
                 return Arrays.asList(1, 2, 4);
             }
         }
-        list = createListRepeated();
-        GenericListDeduplicator deduplicator = new Stub();
+        int distinct = aggregator.distinct(list, new Stub());
+        */
+
+        GenericListDeduplicator deduplicator = Mockito.mock(GenericListDeduplicator.class);
+        Mockito.when(deduplicator.deduplicate(Mockito.anyList())).thenReturn(Arrays.asList(1, 2, 4));
         int distinct = aggregator.distinct(list, deduplicator);
 
         Assertions.assertEquals(3, distinct);
